@@ -1,0 +1,69 @@
+{% extends 'defaultLayout.html' %} 
+{% load static %}
+
+{% block title %}
+    Объявление
+{% endblock title %}
+
+{% block page-class %}
+   class="adv-detail"
+{% endblock page-class %}
+
+{% block abracadabra %}
+   <div class="container">
+           <div class="space-lg"></div>
+   <a href="{% url 'wow_adv:home' %}">Назад</a>
+   <h1> {{ adv.title }}</h1>
+   <small>
+    Автор: {{ adv.author.first_name }} {{ adv.author.last_name }}
+   </small>  
+   <p>
+   {{ adv.body|safe }}
+   </p>
+    {% comment %} TODO: for empty  {% endcomment %}
+    {% comment %} TODO: sort by date  {% endcomment %}
+   {% comment %} TODO: breadcrumbs Гглавная - Категории - _категория_ - заголовок  {% endcomment %}
+   <h2>Отклики</h2>
+      {% if user.is_authenticated %}
+    <form method="post">
+    {% comment %} <form action="{% url 'wow_adv:create_response' adv.id %}" method="post"> {% endcomment %}
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Отправить">
+    </form>
+    {% endif %}
+   {% if not adv.responses.all %}
+        Откликов на объявление еще нет
+        {% comment %} <a href="{% url 'wow_adv:create_response' adv.pk %}">Можете откликнуться</a> {% endcomment %}
+    {% else %}
+       {% comment %} <p> <a href="{% url 'wow_adv:create_response' adv.pk %}">Откликнуться</a></p> {% endcomment %}
+     
+        {% for response in adv.responses.all %}
+          {% if response.isApproved  %}
+           <div class=""> 
+                <strong>{{ response.title }}</strong><br>
+                <strong>{{ response.dateCreation }}</strong>
+                <p>{{ response.text }}</p>
+                <p>Автор отклика: <small>{% firstof response.responseUser.first_name response.responseUser.second_name response.responseUser.email %}</small></p>
+                 {% if user == adv.author %}
+                      <a href="{% url 'wow_members:reject_response' response.id %}">Отклонить</a>
+                 {% endif %}
+           </div>
+           {% else %}
+                <div class="text-muted"> 
+                    <strong>{{ response.title }}</strong>
+                    <strong>{{ response.dateCreation }}</strong>
+                    <p>{{ response.text }}</p>
+                    <p>Автор отклика: <small>{% firstof response.responseUser.first_name response.responseUser.second_name response.responseUser.email %}</small></p>
+                     {% if user == adv.author %}
+                       <a href="{% url 'wow_members:approve_response' response.id %}">Принять</a>
+                       <a href="{% url 'wow_members:delete_response' response.id %}">Удалить</a>
+                     {% endif %}
+                </div>
+            {% endif %}   
+        {% endfor %}
+ 
+
+   {% endif %}
+   </div>
+{% endblock abracadabra %}
